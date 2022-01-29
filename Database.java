@@ -1,9 +1,18 @@
-import java.io.IOException;
+import java.io.*;
 import java.util.*;
+import java.nio.file.Files;
+import java.nio.file.Paths;
+import java.util.stream.Collectors;
+
+import static java.lang.Double.parseDouble;
+import static java.lang.Integer.parseInt;
 
 public class Database {
     private static final Database _inst = new Database();
-    public static Database getInstance() { return _inst; }
+
+    public static Database getInstance() {
+        return _inst;
+    }
 
     private List<Hero> heroes;
     private List<HeroAlliance> heroAlliances;
@@ -18,6 +27,72 @@ public class Database {
     //Parse the CSV files and fill the four lists given above.
     public void parseFiles(String playerCSVFile) throws IOException {
         //TODO
+        if (heroes == null) {
+            try {
+                File heroesFile = new File("herostats.csv");
+                InputStream inputStream = new FileInputStream(heroesFile);
+                BufferedReader bufferedReader = new BufferedReader(new InputStreamReader(inputStream));
+                heroes = bufferedReader.lines().map(line -> {
+                    String[] heroTokens = line.split(",");
+                    return new Hero(
+                            heroTokens[0], // name
+                            parseInt(heroTokens[1]), // level
+                            parseInt(heroTokens[2]), // health
+                            parseInt(heroTokens[3]), // mana
+                            parseInt(heroTokens[4]), // DPS
+                            parseInt(heroTokens[5]), // damageMin
+                            parseInt(heroTokens[6]), // damageMax
+                            parseDouble(heroTokens[7]), // attackSpeed
+                            parseInt(heroTokens[8]), // moveSpeed
+                            parseInt(heroTokens[9]), // attackRange
+                            parseInt(heroTokens[10]), // magicResist
+                            parseInt(heroTokens[11]) // armor
+                    );
+                }).collect(Collectors.toList());
+                bufferedReader.close();
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
+        }
+        if (alliances == null) {
+            try {
+                File alliancesFile = new File("alliances.csv");
+                InputStream inputStream = new FileInputStream(alliancesFile);
+                BufferedReader bufferedReader = new BufferedReader(new InputStreamReader(inputStream));
+                alliances = bufferedReader.lines().map(line -> {
+                    String[] allianceTokens = line.split(",");
+                    return new Alliance(
+                            allianceTokens[0], // name
+                            parseInt(allianceTokens[1]), // requiredCount
+                            parseInt(allianceTokens[2]) // requiredCount
+                    );
+                }).collect(Collectors.toList());
+                bufferedReader.close();
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
+        }
+        if (heroAlliances == null) {
+            try {
+                File heroAlliancesFile = new File("heroalliances.csv");
+                InputStream inputStream = new FileInputStream(heroAlliancesFile);
+                BufferedReader bufferedReader = new BufferedReader(new InputStreamReader(inputStream));
+                heroAlliances = bufferedReader.lines().map(line -> {
+                    String[] heroAllianceTokens = line.split(",");
+                    String[] heroAlliances = Arrays.copyOfRange(heroAllianceTokens, 2, heroAllianceTokens.length);
+                    return new HeroAlliance(
+                            heroAllianceTokens[0], // name
+                            parseInt(heroAllianceTokens[1]), // tier
+                            heroAlliances // alliances
+                    );
+                }).collect(Collectors.toList());
+                bufferedReader.close();
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
+        }
+
+
     }
 
     //Gets the heroes belonging to a particular alliance and sorts them according to their DPS. It should only return
