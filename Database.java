@@ -26,7 +26,7 @@ public class Database {
 
     //Parse the CSV files and fill the four lists given above.
     public void parseFiles(String playerCSVFile) throws IOException {
-        //TODO
+        // Parse herostats.csv if necessary.
         if (heroes == null) {
             try {
                 File heroesFile = new File("herostats.csv");
@@ -54,6 +54,7 @@ public class Database {
                 e.printStackTrace();
             }
         }
+        // Parse alliances.csv if necessary.
         if (alliances == null) {
             try {
                 File alliancesFile = new File("alliances.csv");
@@ -72,6 +73,7 @@ public class Database {
                 e.printStackTrace();
             }
         }
+        // Parse heroalliances.csv if necessary.
         if (heroAlliances == null) {
             try {
                 File heroAlliancesFile = new File("heroalliances.csv");
@@ -91,8 +93,30 @@ public class Database {
                 e.printStackTrace();
             }
         }
-
-
+        // Parse input players file.
+        try {
+            File playersFile = new File(playerCSVFile);
+            InputStream inputStream = new FileInputStream(playersFile);
+            BufferedReader bufferedReader = new BufferedReader(new InputStreamReader(inputStream));
+            players = bufferedReader.lines().map(line -> {
+                String[] playerTokens = line.split(",");
+                List<Hero> playerHeroes = Arrays.stream(Arrays.copyOfRange(playerTokens, 2, playerTokens.length)).map(heroToken -> {
+                    String heroName = heroToken.split("\\|")[0];
+                    int heroLevel = parseInt(heroToken.split("\\|")[1]);
+                    List<Hero> qualifyingHeroes = heroes.stream()
+                            .filter(hero -> Objects.equals(hero.getName(), heroName) && hero.getLevel() == heroLevel)
+                            .collect(Collectors.toList());
+                    return qualifyingHeroes.get(0);
+                }).collect(Collectors.toList());
+                return new Player(
+                        playerTokens[0], // name
+                        playerHeroes // alliances
+                );
+            }).collect(Collectors.toList());
+            bufferedReader.close();
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
     }
 
     //Gets the heroes belonging to a particular alliance and sorts them according to their DPS. It should only return
