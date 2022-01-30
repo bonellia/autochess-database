@@ -1,5 +1,7 @@
 import java.io.*;
 import java.util.*;
+import java.util.function.BinaryOperator;
+import java.util.function.Function;
 import java.util.stream.Collectors;
 
 import static java.lang.Double.parseDouble;
@@ -122,15 +124,43 @@ public class Database {
     //in the result.
     //15pts
     public List<Hero> getHeroesOfParticularAlliance(String alliance, int count) {
-        //TODO
-
-        return null;
+        // Gonna split into two for sake of readability.
+        // 1. Find hero names for the given alliance.
+        List<String> qualifyingHeroNames = this.heroAlliances
+                .stream()
+                .filter(
+                        ha -> ha.getAlliances()
+                                .stream()
+                                .anyMatch(a -> a.equals(alliance))) // At this point, we have qualifying hero alliances.
+                .map(HeroAlliance::getName).collect(Collectors.toList()); // Now we have names of heroes.
+        // 2. Find heroes with the highest dps in a map, then from values of that map, return top n heroes.
+        return this.heroes
+                .stream()
+                .filter(
+                        h -> qualifyingHeroNames.contains(h.getName()))
+                .sorted(Comparator.comparing((Hero::getDPS)))
+                .collect(
+                        Collectors.toMap(
+                                Hero::getName,
+                                Function.identity(),
+                                BinaryOperator.maxBy(Comparator.comparing(Hero::getDPS))
+                        )
+                ) // At this point, we have heroes without duplicates, highest dps per hero in a map.
+                .values() // Could split the code here (actually did for debugging) but chaining looked readable enough.
+                .stream()
+                .sorted(
+                        Comparator
+                                .comparing(Hero::getDPS)
+                                .reversed())
+                .limit(count) // Final touch to get top n heroes.
+                .collect(Collectors.toList());
     }
 
     //Returns a map of HeroAlliances based on tier where the alliance required count and alliance level counts match.
     //15pts
     public Map<Integer, List<HeroAlliance>> getHeroAllianceMatchingTier(int allianceRequiredCount, int allianceLevelCount) {
         //TODO
+
         return null;
     }
 
