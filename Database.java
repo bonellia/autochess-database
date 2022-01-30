@@ -1,7 +1,5 @@
 import java.io.*;
 import java.util.*;
-import java.nio.file.Files;
-import java.nio.file.Paths;
 import java.util.stream.Collectors;
 
 import static java.lang.Double.parseDouble;
@@ -27,12 +25,12 @@ public class Database {
     //Parse the CSV files and fill the four lists given above.
     public void parseFiles(String playerCSVFile) throws IOException {
         // Parse herostats.csv if necessary.
-        if (heroes == null) {
+        if (this.heroes == null) {
             try {
                 File heroesFile = new File("herostats.csv");
                 InputStream inputStream = new FileInputStream(heroesFile);
                 BufferedReader bufferedReader = new BufferedReader(new InputStreamReader(inputStream));
-                heroes = bufferedReader.lines().map(line -> {
+                this.heroes = bufferedReader.lines().map(line -> {
                     String[] heroTokens = line.split(",");
                     return new Hero(
                             heroTokens[0], // name
@@ -55,12 +53,12 @@ public class Database {
             }
         }
         // Parse alliances.csv if necessary.
-        if (alliances == null) {
+        if (this.alliances == null) {
             try {
                 File alliancesFile = new File("alliances.csv");
                 InputStream inputStream = new FileInputStream(alliancesFile);
                 BufferedReader bufferedReader = new BufferedReader(new InputStreamReader(inputStream));
-                alliances = bufferedReader.lines().map(line -> {
+                this.alliances = bufferedReader.lines().map(line -> {
                     String[] allianceTokens = line.split(",");
                     return new Alliance(
                             allianceTokens[0], // name
@@ -74,12 +72,12 @@ public class Database {
             }
         }
         // Parse heroalliances.csv if necessary.
-        if (heroAlliances == null) {
+        if (this.heroAlliances == null) {
             try {
                 File heroAlliancesFile = new File("heroalliances.csv");
                 InputStream inputStream = new FileInputStream(heroAlliancesFile);
                 BufferedReader bufferedReader = new BufferedReader(new InputStreamReader(inputStream));
-                heroAlliances = bufferedReader.lines().map(line -> {
+                this.heroAlliances = bufferedReader.lines().map(line -> {
                     String[] heroAllianceTokens = line.split(",");
                     String[] heroAlliances = Arrays.copyOfRange(heroAllianceTokens, 2, heroAllianceTokens.length);
                     return new HeroAlliance(
@@ -98,19 +96,19 @@ public class Database {
             File playersFile = new File(playerCSVFile);
             InputStream inputStream = new FileInputStream(playersFile);
             BufferedReader bufferedReader = new BufferedReader(new InputStreamReader(inputStream));
-            players = bufferedReader.lines().map(line -> {
+            this.players = bufferedReader.lines().map(line -> {
                 String[] playerTokens = line.split(",");
                 List<Hero> playerHeroes = Arrays.stream(Arrays.copyOfRange(playerTokens, 2, playerTokens.length)).map(heroToken -> {
                     String heroName = heroToken.split("\\|")[0];
                     int heroLevel = parseInt(heroToken.split("\\|")[1]);
-                    List<Hero> qualifyingHeroes = heroes.stream()
+                    List<Hero> qualifyingHeroes = this.heroes.stream()
                             .filter(hero -> Objects.equals(hero.getName(), heroName) && hero.getLevel() == heroLevel)
                             .collect(Collectors.toList());
                     return qualifyingHeroes.get(0);
                 }).collect(Collectors.toList());
                 return new Player(
                         playerTokens[0], // name
-                        playerHeroes // alliances
+                        playerHeroes // heroes
                 );
             }).collect(Collectors.toList());
             bufferedReader.close();
@@ -125,6 +123,7 @@ public class Database {
     //15pts
     public List<Hero> getHeroesOfParticularAlliance(String alliance, int count) {
         //TODO
+
         return null;
     }
 
