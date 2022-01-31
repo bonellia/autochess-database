@@ -179,13 +179,36 @@ public class Database {
     //Return the heroes of each player that have bigger than the mana, health and move speed given as arguments.
     //10pts
     public List<List<Hero>> getPlayerHeros(int mana, int health, int moveSpeed) {
-        return null;
+        // Initially I created an intermediary list of qualifying heroes, then I realized I can just do it in filter.
+        // Note that this was only possible since players already have a list of Hero objects, instead of "Puck|3" etc.
+        return this.players
+                .stream()
+                .map(player -> player
+                        .getHeroes()
+                        .stream()
+                        .filter(h ->
+                                h.getMana() > mana &&
+                                        h.getHealth() > health &&
+                                        h.getMoveSpeed() > moveSpeed
+                        ).
+                        collect(Collectors.toList())
+                )
+                .collect(Collectors.toList());
     }
 
     //Calculate and print the average maximum damage of players whose heroes has minimum damage is bigger than the given first argument.
     //10 pts
     public void printAverageMaxDamage(int minDamage) {
-        //TODO
+        this.players.forEach(player -> {
+            System.out.println(
+                    player.getHeroes()
+                            .stream()
+                            .filter(hero -> hero.getDamageMin() > minDamage)
+                            .map(Hero::getDamageMax)
+                            .mapToDouble(d -> d)
+                            .summaryStatistics().getAverage()
+            );
+        });
     }
 
     //In this function, print each player and its heroes. However, you should only print heroes belonging to
