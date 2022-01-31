@@ -100,7 +100,11 @@ public class Database {
             BufferedReader bufferedReader = new BufferedReader(new InputStreamReader(inputStream));
             this.players = bufferedReader.lines().map(line -> {
                 String[] playerTokens = line.split(",");
-                List<Hero> playerHeroes = Arrays.stream(Arrays.copyOfRange(playerTokens, 2, playerTokens.length)).map(heroToken -> {
+                List<Hero> playerHeroes = Arrays
+                        .stream(Arrays.copyOfRange(
+                                playerTokens,
+                                1, // I had a bug here, it was 2, thanks for the remark on discussion forum!
+                                playerTokens.length)).map(heroToken -> {
                     String heroName = heroToken.split("\\|")[0];
                     int heroLevel = parseInt(heroToken.split("\\|")[1]);
                     List<Hero> qualifyingHeroes = this.heroes.stream()
@@ -215,6 +219,38 @@ public class Database {
     // any of the particular alliances and whose attack speed is smaller than or equal to the value given.
     //30pts
     public void printAlliances(String[] alliances, double attackSpeed) {
-        //TODO
+        // This one seemed lengthy enough to separate as well.
+        // First, get rid of heroes with high attack speed.
+        HashSet<String> heroesWithCorrectAttackSpeed = this.heroes
+                .stream()
+                .filter(hero -> hero.getAttackSpeed() <= attackSpeed)
+                .map(Hero::getName)
+                .collect(Collectors.toCollection(HashSet::new));
+        // I could just && the following withing previous set's filter predicate, but readability would be awful.
+        Set<String> heroesWithCorrectAlliance = this.heroAlliances
+                .stream()
+                .filter(ha -> {
+                    HashSet<String> intersection = new HashSet<>(ha.getAlliances()); // Initialize it from current ha.
+                    intersection.retainAll(new HashSet<>(Arrays.asList(alliances))); // Intersect with correct alliances.
+                    return !intersection.isEmpty();
+                }).map(HeroAlliance::getName)
+                .collect(Collectors.toSet());
+
+        heroesWithCorrectAlliance.retainAll(heroesWithCorrectAttackSpeed); // This intersection only has correct heroes.
+
+        this.players.stream()
+                .filter(player -> player.getHeroes()
+                        .stream()
+                        .anyMatch(hero -> heroesWithCorrectAlliance.contains(hero.getName())
+                        )) // At this point we have only qualifying players.
+                .forEach(player -> {
+                    System.out.println(player.getName()); // We can print the player name.
+                    player.getHeroes()
+                            .stream()
+                            .filter(hero -> heroesWithCorrectAlliance
+                                    .contains(hero.getName())) // Qualifying heroes of the current player.
+                            .forEach(hero ->
+                                    System.out.println("Name: " + hero.getName() + " Level: " + hero.getLevel()));
+                });
     }
 }

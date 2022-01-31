@@ -33,6 +33,8 @@ public class Runner {
             });
             System.out.println("Testing printAverageMaxDamage for 60");
             Database.getInstance().printAverageMaxDamage(60);
+            System.out.println("Testing printAlliances for Mage,1.3");
+            Database.getInstance().printAlliances(new String[]{"Mage"}, 1.3);
         } catch (Exception e) {
             e.printStackTrace();
         }
