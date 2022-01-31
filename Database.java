@@ -159,9 +159,21 @@ public class Database {
     //Returns a map of HeroAlliances based on tier where the alliance required count and alliance level counts match.
     //15pts
     public Map<Integer, List<HeroAlliance>> getHeroAllianceMatchingTier(int allianceRequiredCount, int allianceLevelCount) {
-        //TODO
-
-        return null;
+        // Gonna split into two for sake of readability.
+        // 1. Find alliance names for the given counts.
+        Set<String> qualifyingAlliances = this.alliances
+                .stream()
+                .filter(a -> a.getRequiredCount() == allianceRequiredCount && a.getLevelCount() == allianceLevelCount)
+                .map(Alliance::getName).collect(Collectors.toSet());
+        // Using the set above, filter hero alliances with correct alliances.
+        return this.heroAlliances
+                .stream()
+                .filter(ha -> {
+                    HashSet<String> intersection = new HashSet<>(ha.getAlliances()); // Initialize it from current ha.
+                    intersection.retainAll(qualifyingAlliances); // Get rid of non-qualifying alliances.
+                    return !intersection.isEmpty(); // If intersection is not empty, keep within stream.
+                })
+                .collect(Collectors.groupingBy(HeroAlliance::getTier));
     }
 
     //Return the heroes of each player that have bigger than the mana, health and move speed given as arguments.
